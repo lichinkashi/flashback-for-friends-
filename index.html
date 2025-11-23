@@ -65,7 +65,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% - 70px); /* Учитываем высоту меню */
             display: none;
             flex-direction: column;
         }
@@ -352,6 +352,7 @@
             padding: 20px;
             overflow-y: auto;
             background: transparent;
+            height: 100%;
         }
         
         .light-theme .favorites-screen {
@@ -398,6 +399,7 @@
             padding: 20px;
             overflow-y: auto;
             background: transparent;
+            height: 100%;
         }
         
         .light-theme .search-screen {
@@ -458,6 +460,7 @@
             padding: 20px;
             overflow-y: auto;
             background: transparent;
+            height: 100%;
         }
         
         .light-theme .settings-screen {
@@ -569,7 +572,7 @@
             border-top: 1px solid #333;
             height: 70px;
             position: relative;
-            z-index: 100;
+            z-index: 1000; /* Увеличиваем z-index */
             overflow: hidden;
         }
         
@@ -1012,6 +1015,15 @@
             const viewport = document.getElementById('photoViewport');
             
             slide.addEventListener('touchstart', (e) => {
+                // Проверяем, не начался ли вертикальный свайп
+                const touchY = e.touches[0].clientY;
+                const viewportHeight = viewport.offsetHeight;
+                
+                // Если касание в нижней части экрана - это может быть вертикальный свайп
+                if (touchY > viewportHeight * 0.7) {
+                    return; // Не начинаем перетаскивание
+                }
+                
                 isDragging = true;
                 dragStartX = e.touches[0].clientX;
                 dragStartY = e.touches[0].clientY;
@@ -1314,39 +1326,42 @@
             let startX, startY;
             const viewport = document.getElementById('photoViewport');
             let verticalSwipe = false;
+            let verticalStartY = 0;
             
+            // Отдельный обработчик для вертикальных свайпов
             viewport.addEventListener('touchstart', e => {
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
+                verticalStartY = startY;
                 verticalSwipe = false;
                 handleDoubleTap();
             });
             
             viewport.addEventListener('touchmove', e => {
-                if (!startX || !startY || isDragging) return;
+                if (!startX || !startY) return;
                 
                 const currentY = e.touches[0].clientY;
-                const diffY = currentY - startY;
+                const diffY = currentY - verticalStartY;
                 
-                // Определяем вертикальный свайп
-                if (Math.abs(diffY) > 10) {
+                // Если движение в основном вертикальное - это вертикальный свайп
+                if (Math.abs(diffY) > 10 && Math.abs(diffY) > Math.abs(e.touches[0].clientX - startX)) {
                     verticalSwipe = true;
                 }
             });
             
             viewport.addEventListener('touchend', e => {
-                if (!startX || !startY || isDragging) return;
+                if (!startX || !startY) return;
                 
                 const endX = e.changedTouches[0].clientX;
                 const endY = e.changedTouches[0].clientY;
                 
                 const diffX = endX - startX;
-                const diffY = endY - startY;
+                const diffY = endY - verticalStartY;
                 
                 startX = startY = null;
                 
                 // Вертикальные свайпы только для информации
-                if (verticalSwipe && Math.abs(diffY) > 50 && Math.abs(diffX) < 30) {
+                if (verticalSwipe && Math.abs(diffY) > 50) {
                     if (diffY < 0) {
                         // Свайп вверх - показать информацию
                         togglePhotoInfo();
