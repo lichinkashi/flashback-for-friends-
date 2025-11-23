@@ -1,0 +1,10 @@
+{
+  "name": "Flashback App",
+  "short_name": "Flashback",
+  "description": "Просмотр фото через уникальные диагональные жесты",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#8B0000",
+  "icons": []
+}
